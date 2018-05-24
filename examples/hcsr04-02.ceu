@@ -1,0 +1,32 @@
+#define HCSR04_PIN_TRIGGER 07
+#ifdef ARDUINO_BOARD_MEGA
+#include "pin-10.ceu"
+#define HCSR04_PIN_ECHO 10
+#else
+#include "pin-02.ceu"
+#define HCSR04_PIN_ECHO 02
+#endif
+
+#include "hcsr04.ceu"
+
+{
+    S.begin(9600);
+    S.println("HC-SR04 01");
+    _DELAY(15);
+}
+
+output on/off PIN_13;
+
+par do
+    loop do
+        var int d = await Hcsr04();
+        {S.println(@d); _DELAY(5);}
+    end
+with
+    loop do
+        await 1s;
+        emit PIN_13(on);
+        await 1s;
+        emit PIN_13(off);
+    end
+end
