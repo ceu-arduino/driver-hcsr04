@@ -1,17 +1,25 @@
+#include "timer1.ceu"
+
 #define HCSR04_PIN_TRIGGER 07
-#ifdef ARDUINO_BOARD_MEGA
-#include "pin-10.ceu"
-#define HCSR04_PIN_ECHO 10
-#else
-#include "pin-02.ceu"
+
+#if 1
 #define HCSR04_PIN_ECHO 02
+//#define GPIO_PIN_02_MODE _LOW
+#include "pin_02.ceu"
+#elif 0
+#define HCSR04_PIN_ECHO 03
+//#define GPIO_PIN_03_MODE _LOW
+#include "pin_03.ceu"
+#elif 0
+#define HCSR04_PIN_ECHO 10
+#include "pin_10.ceu"
 #endif
 
 #include "hcsr04.ceu"
 
 {
     S.begin(9600);
-    S.println("HC-SR04 01");
+    S.println("HC-SR04 02");
     _DELAY(15);
 }
 

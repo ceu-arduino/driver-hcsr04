@@ -1,4 +1,4 @@
-#include <wclock.ceu>
+#include "timer1.ceu"
 
 #ifndef HCSR04_PIN_ECHO
 #error "Missing #define HCSR04_PIN_ECHO..."
