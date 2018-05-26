@@ -1,26 +1,24 @@
 #include "wclock.ceu"
+#include "hcsr04.ceu"
 
-#define HCSR04_PIN_TRIGGER 07
+#define PIN_TRIGGER 7
+output high/low PIN_07;
 
-#if 1
-#define HCSR04_PIN_ECHO 02
-//#define GPIO_PIN_02_MODE _LOW
+#define PIN_ECHO 2
+#if PIN_ECHO == 2
 #include "pin_02.ceu"
-#elif 0
-#define HCSR04_PIN_ECHO 03
-//#define GPIO_PIN_03_MODE _LOW
+#elif PIN_ECHO == 3
 #include "pin_03.ceu"
-#elif 0
-#define HCSR04_PIN_ECHO 10
+#elif PIN_ECHO == 4
+#include "pin_04.ceu"
+#elif PIN_ECHO == 10
 #include "pin_10.ceu"
 #endif
 
-#include "hcsr04.ceu"
-
-output on/off PIN_13;
+output high/low PIN_13;
 
 loop do
-    var int d = await Hcsr04();
-    emit PIN_13((d <= 30) as on/off);
+    var int? d = await Hcsr04(PIN_TRIGGER, PIN_ECHO);
+    emit PIN_13(d? and ((d! <= 30) as high/low));
     await 60ms;
 end

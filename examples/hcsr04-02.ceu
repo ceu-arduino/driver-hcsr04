@@ -1,40 +1,26 @@
+// probably works only on ATmega328p
+
 #include "wclock.ceu"
-
-#define HCSR04_PIN_TRIGGER 07
-
-#if 1
-#define HCSR04_PIN_ECHO 02
-//#define GPIO_PIN_02_MODE _LOW
-#include "pin_02.ceu"
-#elif 0
-#define HCSR04_PIN_ECHO 03
-//#define GPIO_PIN_03_MODE _LOW
-#include "pin_03.ceu"
-#elif 0
-#define HCSR04_PIN_ECHO 10
-#include "pin_10.ceu"
-#endif
-
 #include "hcsr04.ceu"
 
-{
-    S.begin(9600);
-    S.println("HC-SR04 02");
-    _DELAY(15);
-}
+// trigger
+output high/low PIN_07;
+output high/low PIN_08;
 
-output on/off PIN_13;
+// echo
+#include "pin_02.ceu"
+#include "pin_03.ceu"
 
-par do
-    loop do
-        var int d = await Hcsr04();
-        {S.println(@d); _DELAY(5);}
+output high/low PIN_13;
+
+loop do
+    var int? d1;
+    var int? d2;
+    par/and do
+        d1 = await Hcsr04(7, 2);
+    with
+        d2 = await Hcsr04(8, 3);
     end
-with
-    loop do
-        await 1s;
-        emit PIN_13(on);
-        await 1s;
-        emit PIN_13(off);
-    end
+    emit PIN_13(d1? and d2? and ((d1!<=30 and d2!<=30) as high/low));
+    await 60ms;
 end

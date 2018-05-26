@@ -1,62 +1,46 @@
-#include "timer1.ceu"
-
-#ifndef HCSR04_PIN_ECHO
-#error "Missing #define HCSR04_PIN_ECHO..."
-#endif
-#ifndef HCSR04_PIN_TRIGGER
-#error "Missing #define HCSR04_PIN_TRIGGER..."
-#endif
-
-#define _PIN_(a,b) a##b
-#define PIN(x) _PIN_(PIN_,x)
-
 ///////////////////////////////////////////////////////////////////////////////
-// EXTERNAL INTERFACE
+// INTERFACE
 ///////////////////////////////////////////////////////////////////////////////
 
-code/await Hcsr04 (none) -> int;
+code/await Hcsr04 (var int pin_trigger, var int pin_echo) -> int?;
 
 ///////////////////////////////////////////////////////////////////////////////
-// ABSTRACTIONS
+// IMPLEMENTATION
 ///////////////////////////////////////////////////////////////////////////////
 
-output on/off PIN(HCSR04_PIN_TRIGGER);
-emit PIN(HCSR04_PIN_TRIGGER)(off);
+#include "wclock.ceu"
+#include "millis_micros.ceu"
+#include "gpio.ceu"
 
-#define READ_AWAIT_UNTIL(pin,x)                         \
-    do                                                  \
-        if (_digitalRead(pin) as bool) != x then        \
-            var on/off y = await PIN(pin) until x==y;   \
-        end                                             \
+#define READ_AWAIT_UNTIL(pin_a,v_a)                                     \
+    do                                                                  \
+        if (_digitalRead(pin_a) as bool) != v_a then                    \
+            var int pin_b;                                              \
+            var high/low v_b;                                           \
+            (pin_b,v_b) = await PIN_IN until pin_b==pin_a and v_b==v_a; \
+        end                                                             \
     end
 
-code/await Hcsr04 (none) -> int do
-    var on/off echo = _digitalRead(HCSR04_PIN_ECHO) as on/off;
+code/await Hcsr04 (var int pin_trigger, var int pin_echo) -> int? do
+    var on/off echo = _digitalRead(pin_echo) as on/off;
     //_ceu_assert(echo == off, "HCSCR04: bug found");
     //_ceu_arduino_assert(echo == off, 2);
 
-    {ceu_pm_set(CEU_PM_TIMER0, 1);}
-    do finalize with
-        {ceu_pm_set(CEU_PM_TIMER0, 0);}
+    spawn Millis_Micros();
+
+    emit PIN_OUT(pin_trigger, high);
+    _delayMicroseconds(10);
+    emit PIN_OUT(pin_trigger, low);
+
+    var int? ret;
+
+    watching 25ms do
+        READ_AWAIT_UNTIL(pin_echo, high);
+        var u32 old = _micros();
+        READ_AWAIT_UNTIL(pin_echo, low);
+        var u32 now = _micros();
+        ret = (((now - old) as int)/58) as int;
     end
 
-    emit PIN(HCSR04_PIN_TRIGGER)(on);
-    _delayMicroseconds(10);
-    emit PIN(HCSR04_PIN_TRIGGER)(off);
-
-    var u32 dt = do
-        watching 25ms do
-        READ_AWAIT_UNTIL(HCSR04_PIN_ECHO, on);
-        //var on/off echo = await PIN(HCSR04_PIN_ECHO) until (echo == on);
-            var u32 old = _micros();
-            READ_AWAIT_UNTIL(HCSR04_PIN_ECHO, off);
-            //echo = await PIN(HCSR04_PIN_ECHO) until (echo == off);
-            var u32 now = _micros();
-            escape (now - old);
-        end
-        escape 0;
-    end;
-
-    var int distance = ((dt as int)/58) as int;
-    escape distance;
+    escape ret;
 end
