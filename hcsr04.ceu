@@ -14,7 +14,7 @@ code/await Hcsr04 (var int pin_trigger, var int pin_echo) -> int?;
 
 #define READ_AWAIT_UNTIL(pin_a,v_a)                                     \
     do                                                                  \
-        if (_digitalRead(pin_a) as bool) != v_a then                    \
+        if (_digitalRead(pin_a)) != v_a then                            \
             var int pin_b;                                              \
             var high/low v_b;                                           \
             (pin_b,v_b) = await PIN_IN until pin_b==pin_a and v_b==v_a; \
@@ -22,7 +22,7 @@ code/await Hcsr04 (var int pin_trigger, var int pin_echo) -> int?;
     end
 
 code/await Hcsr04 (var int pin_trigger, var int pin_echo) -> int? do
-    var on/off echo = _digitalRead(pin_echo) as on/off;
+    var on/off echo = _digitalRead(pin_echo);
     //_ceu_assert(echo == off, "HCSCR04: bug found");
     //_ceu_arduino_assert(echo == off, 2);
 
