@@ -22,9 +22,9 @@ code/await Hcsr04 (var int pin_trigger, var int pin_echo) -> int?;
     end
 
 code/await Hcsr04 (var int pin_trigger, var int pin_echo) -> int? do
-    var on/off echo = _digitalRead(pin_echo);
-    //_ceu_assert(echo == off, "HCSCR04: bug found");
-    //_ceu_arduino_assert(echo == off, 2);
+    var high/low echo = _digitalRead(pin_echo);
+    //_ceu_assert(echo == low, "HCSCR04: bug found");
+    //_ceu_arduino_assert(echo == low, 2);
 
     spawn Millis_Micros();
 
