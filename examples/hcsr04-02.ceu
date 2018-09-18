@@ -1,3 +1,5 @@
+// TODO: doesn't work with current static implementation
+
 // probably works only on ATmega328p
 
 #include "wclock.ceu"

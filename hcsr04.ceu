@@ -1,44 +1,36 @@
+#ifndef HCSR04_ECHO
+#error Missing interrupt pin `HCSR04_ECHO`.
+#endif
+#ifndef HCSR04_TRIGGER
+#error Missing output pin `HCSR04_TRIGGER`.
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // INTERFACE
 ///////////////////////////////////////////////////////////////////////////////
 
-code/await Hcsr04 (var int pin_trigger, var int pin_echo) -> int?;
+code/await Hcsr04 (none) -> int?;
 
 ///////////////////////////////////////////////////////////////////////////////
 // IMPLEMENTATION
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wclock.ceu"
-#include "millis_micros.ceu"
-#include "gpio.ceu"
 
-#define READ_AWAIT_UNTIL(pin_a,v_a)                                     \
-    do                                                                  \
-        if (_digitalRead(pin_a)) != v_a then                            \
-            var int pin_b;                                              \
-            var high/low v_b;                                           \
-            (pin_b,v_b) = await PIN_IN until pin_b==pin_a and v_b==v_a; \
-        end                                                             \
-    end
-
-code/await Hcsr04 (var int pin_trigger, var int pin_echo) -> int? do
-    var high/low echo = _digitalRead(pin_echo);
-    //_ceu_assert(echo == low, "HCSCR04: bug found");
-    //_ceu_arduino_assert(echo == low, 2);
-
-    spawn Millis_Micros();
-
-    emit PIN_OUT(pin_trigger, high);
-    _delayMicroseconds(10);
-    emit PIN_OUT(pin_trigger, low);
+code/await Hcsr04 (none) -> int? do
+    emit HCSR04_TRIGGER(high);
+    emit WCLOCK_FREEZE(10);
+    emit HCSR04_TRIGGER(low);
 
     var int? ret;
 
     watching 25ms do
-        READ_AWAIT_UNTIL(pin_echo, high);
-        var u32 old = _micros();
-        READ_AWAIT_UNTIL(pin_echo, low);
-        var u32 now = _micros();
+        await HCSR04_ECHO;
+        var u32 old = _;
+        emit WCLOCK_NOW(&old);
+        await HCSR04_ECHO;
+        var u32 now = _;
+        emit WCLOCK_NOW(&now);
         ret = (((now - old) as int)/58) as int;
     end
 

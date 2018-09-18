@@ -1,24 +1,16 @@
+#include "out.ceu"
+#include "int0.ceu"
 #include "wclock.ceu"
+
+output high/low OUT_07;
+output high/low OUT_13;
+
+#define HCSR04_ECHO    INT0
+#define HCSR04_TRIGGER OUT_07
 #include "hcsr04.ceu"
 
-#define PIN_TRIGGER 7
-output high/low PIN_07;
-
-#define PIN_ECHO 2
-#if PIN_ECHO == 2
-#include "pin_02.ceu"
-#elif PIN_ECHO == 3
-#include "pin_03.ceu"
-#elif PIN_ECHO == 4
-#include "pin_04.ceu"
-#elif PIN_ECHO == 10
-#include "pin_10.ceu"
-#endif
-
-output high/low PIN_13;
-
 loop do
-    var int? d = await Hcsr04(PIN_TRIGGER, PIN_ECHO);
-    emit PIN_13(d? and ((d! <= 30) as high/low));
-    await 60ms;
+    var int? d = await Hcsr04();
+    emit OUT_13(d? and ((d! <= 30) as high/low));
+    await 60ms;     // minimum recommended time between measures
 end
