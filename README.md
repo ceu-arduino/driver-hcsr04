@@ -39,7 +39,7 @@ Parameters:
 
 Return:
 
-- `int?`: maybe the distance found
+- `int?`: the distance found (if any)
 
 The measures takes at most `25ms`.
 
@@ -68,5 +68,4 @@ loop do
     emit OUT_13(d? and ((d! <= 30) as high/low));
     await 60ms;     // minimum recommended time between measures
 end
-Reads `_A0` every second and sets `OUT_13` if the value is greater than `1000`:
 ```
