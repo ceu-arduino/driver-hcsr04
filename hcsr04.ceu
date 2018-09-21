@@ -19,7 +19,7 @@ code/await Hcsr04 (none) -> int?;
 
 code/await Hcsr04 (none) -> int? do
     emit HCSR04_TRIGGER(high);
-    emit WCLOCK_FREEZE(10);
+    emit WCLOCK_Freeze(10);
     emit HCSR04_TRIGGER(low);
 
     var int? ret;
@@ -27,10 +27,10 @@ code/await Hcsr04 (none) -> int? do
     watching 25ms do
         await HCSR04_ECHO;
         var u32 old = _;
-        emit WCLOCK_NOW(&old);
+        emit WCLOCK_Now(&old);
         await HCSR04_ECHO;
         var u32 now = _;
-        emit WCLOCK_NOW(&now);
+        emit WCLOCK_Now(&now);
         ret = (((now - old) as int)/58) as int;
     end
 
