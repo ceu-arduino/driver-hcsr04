@@ -30,7 +30,7 @@ These macros must be defined before including the driver:
 Measures the distance from an obstacle:
 
 ```
-code/await Hcsr04 (none) -> int?;
+code/await HCSR04_Init (none) -> int?;
 ```
 
 Parameters:
@@ -64,7 +64,7 @@ output high/low OUT_13;
 #include "hcsr04.ceu"
 
 loop do
-    var int? d = await Hcsr04();
+    var int? d = await HCSR04_Init();
     emit OUT_13(d? and ((d! <= 30) as high/low));
     await 60ms;     // minimum recommended time between measures
 end
