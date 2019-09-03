@@ -9,7 +9,8 @@
 // INTERFACE
 ///////////////////////////////////////////////////////////////////////////////
 
-code/await HCSR04_Init (none) -> int?;
+code/await HCSR04_Init (var int energyPort, var int? time) -> NEVER;
+code/await HCSR04_Read (var int? energyPort, var int? time) -> int?;
 
 ///////////////////////////////////////////////////////////////////////////////
 // IMPLEMENTATION
@@ -17,7 +18,56 @@ code/await HCSR04_Init (none) -> int?;
 
 #include "wclock.ceu"
 
-code/await HCSR04_Init (none) -> int? do
+#define HCSR04_SENSOR_DEFAULT_TIME 80
+var bool hcsr04_single_turn_on = false;
+
+code/await HCSR04_Init (var int energyPort, var int? time) -> NEVER do
+    do finalize with
+        _digitalWrite(energyPort, low);
+        outer.hcsr04_single_turn_on = false;
+    end
+
+    outer.hcsr04_single_turn_on = true;
+
+    //turn on
+    {
+        pinMode(@energyPort, OUTPUT);
+        digitalWrite(@energyPort, HIGH);
+    }
+
+    // waits for the circuit to stabilize
+    if (time?) then
+        await (time!)ms;
+    else
+        await (HCSR04_SENSOR_DEFAULT_TIME)ms;
+    end
+
+    await FOREVER;
+end
+
+code/await HCSR04_Read (var int? energyPort, var int? time) -> int? do
+
+    do finalize with
+        if ((outer.hcsr04_single_turn_on == false) and (energyPort?)) then
+            _digitalWrite(energyPort!, low);
+        end
+    end
+
+    if ((outer.hcsr04_single_turn_on == false) and (energyPort?)) then
+        //turn on
+        {
+            pinMode(@energyPort!, OUTPUT);
+            digitalWrite(@energyPort!, HIGH);
+        }
+
+        // waits for the circuit to stabilize
+        if (time?) then
+            await (time!)ms;
+        else
+            await (HCSR04_SENSOR_DEFAULT_TIME)ms;
+        end
+    end
+
     emit HCSR04_TRIGGER(high);
     call WCLOCK_Freeze(10);
     emit HCSR04_TRIGGER(low);

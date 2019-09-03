@@ -9,6 +9,8 @@ output high/low OUT_13;
 #define HCSR04_TRIGGER OUT_07
 #include "hcsr04.ceu"
 
+spawn HCSR04_Init(8,_);
+
 loop do
     var int? d = await HCSR04_Read(_,_);
     emit OUT_13(d? and ((d! <= 30) as high/low));
